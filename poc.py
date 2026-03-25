@@ -89,12 +89,14 @@ def main():
     parser.add_argument(
         "--webroot",
         type = str,
-        help = ("Full filepath to webroot. If omitted, script will try to " +
-        "retrieve webroot from application."))
+        help = ("Full filepath to application root. If omitted, script will " +
+            "try to retrieve application root."))
     parser.add_argument(
-        "user",
+        "--user",
         type = str,
-        help = 'Username of legitimate user.')
+        default = None,
+        help = ("If DB authentication (not the default configuration) is " +
+            "enabled, a username of a legitimate user is required."))
     parser.add_argument(
         "url",
         type = str,
@@ -117,14 +119,17 @@ def main():
 
     connector_url = url + "/editor/elfinder/php/connector.php"
 
-    user_dir =  f"/USER-FILES/1-{args.user}-Nottingham/"
+    if args.user != None:
+        project_dir = f"/USER-FILES/1-{args.user}-Nottingham/"
+    else:
+        project_dir = f"/USER-FILES/1--Nottingham/"
 
-    full_user_dir = webroot + user_dir
+    full_project_dir = webroot + project_dir
 
-    upload_url = url + user_dir
+    upload_url = url + project_dir
 
     base_params = {
-        "uploadDir": full_user_dir,
+        "uploadDir": full_project_dir,
         "uploadURL": upload_url}
 
     root_dir_id = "l1_Lw"
